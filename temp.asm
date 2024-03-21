@@ -1,4 +1,4 @@
-mov rdi, [rbp - 0xff]
-mov rsi, [rbp - 0x16]
-add rdi, rsi
-imul rdi, oxff
+movl 0x10, %eax
+movl 0x14, %ebx
+addl %ebx, %eax
+imull %ebx, %eax

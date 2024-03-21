@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
         for(int j = 0; j < num_readings; j++) {
             // run the target assembly code and measure power
             asm volatile (
-                // "movl %1, %%eax;"   // Move value1 into register %eax
+                "movl %1, %%eax;"   // Move value1 into register %eax
                 // "movl %2, %%ebx;"   // Move value2 into register %ebx
                 // "addl %%ebx, %%eax;" // Add value2 to value1 (result in %eax)
                 // "imull %%ebx, %%eax;" // Multiply value1 by value2 (result in %eax)

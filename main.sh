@@ -7,9 +7,7 @@ fi
 
 asm_file="$1"
 input_file="$2"
-
-# # Compile the C code without any changes
-# gcc -o output "$input_file"
+output_file="${input_file%.cpp}_modified.cpp"
 
 # Loop over each instruction in the asm file
 num_instructions=$(wc -l < "$asm_file")
@@ -17,15 +15,30 @@ for ((i=1; i<=num_instructions; i++)); do
     # Create asm files for each i
     ./inst_split.sh "$asm_file" "$i"
 
-    # Replace two "nop"s with the contents of the asm files
-    sed -i "0,/nop/s//$(cat ${asm_file%.asm}_first_instructions.asm | tr -d '\n')/" "$input_file"
-    sed -i "0,/nop/s//$(cat ${asm_file%.asm}_ith_instruction.asm | tr -d '\n')/" "$input_file"
+    if [ -s "${asm_file%.asm}_first_instructions.asm" ]; then
+        echo
+    else
+        echo "nop" > "${asm_file%.asm}_first_instructions.asm"
+    fi
+    # Read lines from the replacement file and enclose them in double quotes
+    while IFS= read -r line; do
+        replacement_lines+="\"$line;\"\n"
+    done < "${asm_file%.asm}_first_instructions.asm"
+
+    
+    # Replace "nop" with the lines from the replacement file in the input file
+    sed "0,/\"nop\"/s//${replacement_lines}/" "$input_file" > "$output_file"
+
+    sed -i "0,/nop/s//$(cat ${asm_file%.asm}_ith_instruction.asm)/" "$output_file"
 
     # Compile the modified C code
-    gcc -o output "$input_file"
+    g++ -o output "$output_file" -L./measure -I./measure -l:libmeasure.a
+
+    # Run the code
+    sudo taskset -c 1 ./output > "${i}_output.txt"
 
     # Clean up the asm files
-    rm "${input_file%.c}_first_instructions.asm" "${input_file%.c}_ith_instruction.asm"
+    rm "${asm_file%.asm}_first_instructions.asm" "${asm_file%.asm}_ith_instruction.asm" "$output_file"
 done
 
 echo "Compilation completed"
