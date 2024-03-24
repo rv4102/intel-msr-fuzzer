@@ -1,24 +1,20 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <random>
 #include "measure.h"
 
 int main(int argc, char *argv[]) {
     // init the measurement library
     init();
 
-    // init rand()
-    srand(time(NULL));
-
     int num_input_types = 1000;
     int num_readings = 250000;
 
     int result;
     for(int i = 0; i < num_input_types; i++) {
-        // value1 and value2 are set randomly
-        volatile int value1 = rand() % 10000;
-        volatile int value2 = rand() % 10000;
+        // value1 and value2 are fixed
+        volatile int value1 = 3;
+        volatile int value2 = 4;
 
         Measurement start = measure();
         for(int j = 0; j < num_readings; j++) {
