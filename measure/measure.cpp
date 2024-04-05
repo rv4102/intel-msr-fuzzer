@@ -8,7 +8,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define USE_MSR 0
+#define USE_MSR 1
+#define MSR 0x00000611
 
 static uint64_t rdtsc() {
   uint64_t a, d;
@@ -47,7 +48,7 @@ uint64_t read_rapl() {
   return strtol(buffer, NULL, 10);
 #else
   uint64_t value;
-  ssize_t n = pread(fd, &value, 8, 0x00000611);
+  ssize_t n = pread(fd, &value, 8, MSR);
   assert(n == 8);
   return value;
 #endif
