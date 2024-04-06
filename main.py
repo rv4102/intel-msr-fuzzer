@@ -2,48 +2,10 @@ import sys
 import re
 import os
 import subprocess
-
-def convert(file_path):
-    extended_asm = []
-    with open(file_path, 'r') as file:
-        registers = set()
-        for line in file:
-            line = line.strip() # remove leading and trailing whitespaces  
-            # add spaces before comma, after comma and before semi colon          
-            line = line.replace(',', ' , ').replace(';', ' ; ')
-            tokens = line.split() # split the line into tokens
-
-            changed_line = ''
-            for token in tokens:
-                # check if the token is a register
-                if re.match(r'%[a-z]+', token):
-                    if len(token) > 4:
-                        token = token[0:4]
-                    registers.add(token)
-                    changed_line += ' %' + token
-                else:
-                    changed_line += ' ' + token
-            
-            extended_asm.append(changed_line)
-
-    # convert the extended assembly to asm volatile block
-    asm_volatile = 'asm volatile(\n'
-    for line in extended_asm:
-        asm_volatile += '\t"' + line + '"\n'
-
-    # get the list of input registers and output values
-    asm_volatile += '\t:\n\t:\n'
-    
-    # get the list of clobbered registers
-    asm_volatile += '\t: '
-    for idx, register in enumerate(registers):
-        if idx == len(registers) - 1:
-            asm_volatile +=  '"' + register + '"\n'
-        else:
-            asm_volatile +=  '"' + register + '", '
-    asm_volatile += ');'
-
-    return asm_volatile
+import argparse
+import random
+from tvla import tvla
+from asm_parser import convert
 
 def replace_func_body(file_path, basic_inst, measurement_inst):
     output = ""
@@ -64,8 +26,10 @@ def create_temp_assembly(asm_code, line_num):
     for i, line in enumerate(lines):
         if i < line_num:
             basic_inst_code += line + '\n'
-        else:
+        elif i == line_num:
             measurement_inst_code += line + '\n'
+        else:
+            break
     
     with open('basic_inst.s', 'w') as f:
         f.write(basic_inst_code)
@@ -74,11 +38,14 @@ def create_temp_assembly(asm_code, line_num):
         f.write(measurement_inst_code)
     
 def create_hw_trace(asm_code, power_monitor_code_path, line_num):
-    create_temp_assembly(asm_code, i)
+    create_temp_assembly(asm_code, line_num)
     basic_inst = convert('basic_inst.s')
     measurement_inst = convert('measurement_inst.s')
 
     # replace basic_inst() and measurement_inst() in power_monitor.c
+    if line_num == 0:
+        basic_inst = ""
+
     power_monitor_code = replace_func_body(power_monitor_code_path, basic_inst, measurement_inst)
 
     # write to temp file
@@ -88,15 +55,11 @@ def create_hw_trace(asm_code, power_monitor_code_path, line_num):
     # compile temp file in a separate process
     result = subprocess.run(['g++', 'temp.cpp', '-L./measure', '-I./measure', '-l:libmeasure.a', '-o', 'temp'])
 
-    # if outputs folder doesnt exist then create it
-    if not os.path.exists('./outputs'):
-        os.makedirs('./outputs')
-
     # run temp file num_readings times
     for j in range(num_readings):
         result = subprocess.run(['./temp'], stdout=subprocess.PIPE)
 
-        with open(f'./outputs/inst_{i}.txt', 'a') as f:
+        with open(f'./outputs/inst_{line_num+1}.txt', 'a') as f:
             f.write(result.stdout.decode('utf-8'))
         
     # delete temp, temp.cpp, basic_inst.s, measurement_inst.s
@@ -105,30 +68,89 @@ def create_hw_trace(asm_code, power_monitor_code_path, line_num):
     os.remove('basic_inst.s')
     os.remove('measurement_inst.s')
 
+def create_contract_trace(asm_code, power_monitor_code_path, line_num):
+    # run temp file num_readings times
+    for j in range(num_readings):
+        # replace the locations with $num values present in the assembly code with random values
+        lines = asm_code.split('\n')
+        for i, line in enumerate(lines):
+            lines[i] = re.sub(r'\$[0-9]+', f'${str(random.randint(0, 10000))}', line)
+        asm_code = '\n'.join(lines)
+
+        create_temp_assembly(asm_code, line_num)
+        basic_inst = convert('basic_inst.s')
+        measurement_inst = convert('measurement_inst.s')
+
+        # replace basic_inst() and measurement_inst() in power_monitor.c
+        if line_num == 0:
+            basic_inst = ""
+        power_monitor_code = replace_func_body(power_monitor_code_path, basic_inst, measurement_inst)
+
+        # write to temp file
+        with open('temp.cpp', 'w') as f:
+            f.write(power_monitor_code)
+            
+        # compile temp file in a separate process
+        result = subprocess.run(['g++', 'temp.cpp', '-L./measure', '-I./measure', '-l:libmeasure.a', '-o', 'temp'])
+        result = subprocess.run(['./temp'], stdout=subprocess.PIPE)
+
+        with open(f'./outputs/inst_{line_num+1}_ct.txt', 'a') as f:
+            f.write(result.stdout.decode('utf-8'))
+        
+    # delete temp, temp.cpp, basic_inst.s, measurement_inst.s
+    os.remove('temp')
+    os.remove('temp.cpp')
+    os.remove('basic_inst.s')
+    os.remove('measurement_inst.s')
+
+
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate Hardware/Contract Trace')
+    parser.add_argument('asm_code_path', type=str, help='Path to assembly code')
+    parser.add_argument('power_monitor_code_path', type=str, help='Path to power monitor code')
+    parser.add_argument('MSR_value', type=str, help='MSR Value')
+    args = parser.parse_args()
+
+    # change the value of Makefile argument to MSR_value
+    with open('Makefile', 'r') as f:
+        makefile = f.read()
+        makefile = re.sub(r'MSR_VAL=0x[0-9]+', f'MSR_VAL={args.MSR_value}', makefile)
+    with open('Makefile', 'w') as f:
+        f.write(makefile)
+    
+    # compile libmeasure.a
+    result = subprocess.run(['make', 'libmeasure.a'])
+
     # read assembly code
-    with open(sys.argv[1], 'r') as f:
+    with open(args.asm_code_path, 'r') as f:
         asm_code = f.read()
     
-    # read power_monitor
-    power_monitor_code_path = sys.argv[2]
-    
     num_instructions = 0
+    instructions = []
     for line in asm_code.split('\n'):
-        # get instruction 
+        instructions.append(line)
         if line.strip() != "":
             num_instructions += 1
     
+    # if outputs folder doesnt exist then create it
+    if not os.path.exists('./outputs'):
+        os.makedirs('./outputs')
+    
+    num_readings = 1000 
     print(f'Number of instructions: {num_instructions}')
     print('###### Building Hardware Trace ######')
     
-    num_readings = 1000
-    
-    for i in range(1, num_instructions):
-        print("Building trace for instruction: ")
-        create_hw_trace(asm_code, power_monitor_code_path, i)
+    for i in range(num_instructions):
+        print("Building traces for instruction: ", instructions[i])
+        create_hw_trace(asm_code, args.power_monitor_code_path, i)
     
     print('###### Hardware Trace Built ######')
 
-    # run TVLA and print results
+    print('###### Building Contract Trace ######')
+    for i in range(num_instructions):
+        print("Building traces for instruction: ", instructions[i])
+        create_contract_trace(asm_code, args.power_monitor_code_path, i)
+    
+    print('###### Contract Trace Built ######')
 
+    exit(0)

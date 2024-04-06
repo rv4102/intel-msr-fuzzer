@@ -6,22 +6,24 @@
     sudo apt install powercap-utils 
     ```
 2. Install scipy and numpy using pip
+3. Disable Intel SGX extensions to stop RAPL Filtering (go to BIOS -> Security -> Intel SGX)
+
+# Explanation of setup
+
+The file ```main.py``` contains all the code needed to compile and measure the energy consumption for different instructions. Our methodology is simple: for a given ```instruction.s``` file containing assembly code, we measure energy for each instruction by first changing the input operand values and obtaining a set of 1000 readings and then fix the input operand values and measure energy again 1000 times for each instruction. Then we run a TVLA analysis to check if there is a significant leakage.
+
+The motivation behind this attack lies in the Platypus paper and we aim to support multiple MSRs with different kinds of physical measurements to be used for creating the profile of each instruction.
 
 # Run instructions
 
-```main.sh``` contains all the code needed to first create a contract trace for 1000 different input values (contract traces) and then to create 1000 readings for a fixed input value (hardware traces).
+```main.py``` contains all the code needed to first create a contract trace for 1000 different input values (contract traces) and then to create 1000 readings for a fixed input value (hardware traces).
 
-1. ```chmod +x main.sh```
-2. ```./main.sh```
+1. ```sudo python3 main.py``` (The sudo is needed in order to read the MSR values)
 
 # Other
 
 All outputs are created and stored in ```./outputs```
 
-```i_output.txt``` files contain the cumulative power reading upto ith instruction pertaining to the contract traces.
+```inst_i.txt``` contains the power reading due to ith instruction whereas ```inst_i_ct.txt``` contains the power reading due to ith instruction in case of contract traces.
 
-```i_output_ht.txt``` contains the cumulative power reading upto ith instruction pertaining to the hardware traces.
-
-```inst_i.txt``` contains the power reading due to ith instruction whereas ```inst_i_ht.txt``` contains the power reading due to ith instruction in case of hardware traces.
-
-The TVLA code looks uses ```inst_i.txt``` and ```inst_i_ht.txt``` and finds violations.
+The TVLA code looks uses ```inst_i.txt``` and ```inst_i_ct.txt``` and finds violations.
