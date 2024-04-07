@@ -37,7 +37,7 @@ def create_temp_assembly(asm_code, line_num):
     with open('measurement_inst.s', 'w') as f:
         f.write(measurement_inst_code)
     
-def create_hw_trace(asm_code, power_monitor_code_path, line_num):
+def create_hardware_trace(asm_code, power_monitor_code_path, line_num):
     create_temp_assembly(asm_code, line_num)
     basic_inst = convert('basic_inst.s')
     measurement_inst = convert('measurement_inst.s')
@@ -107,7 +107,6 @@ def create_contract_trace(asm_code, power_monitor_code_path, line_num):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Hardware/Contract Trace')
     parser.add_argument('asm_code_path', type=str, help='Path to assembly code')
-    parser.add_argument('power_monitor_code_path', type=str, help='Path to power monitor code')
     parser.add_argument('MSR_value', type=str, help='MSR Value')
     args = parser.parse_args()
 
@@ -141,15 +140,15 @@ if __name__ == '__main__':
     print('###### Building Hardware Trace ######')
     
     for i in range(num_instructions):
-        print("Building traces for instruction: ", instructions[i])
-        create_hw_trace(asm_code, args.power_monitor_code_path, i)
+        print("Building trace for instruction: ", instructions[i])
+        create_hardware_trace(asm_code, './power_monitor.cpp', i)
     
     print('###### Hardware Trace Built ######')
 
     print('###### Building Contract Trace ######')
     for i in range(num_instructions):
-        print("Building traces for instruction: ", instructions[i])
-        create_contract_trace(asm_code, args.power_monitor_code_path, i)
+        print("Building trace for instruction: ", instructions[i])
+        create_contract_trace(asm_code, './power_monitor.cpp', i)
     
     print('###### Contract Trace Built ######')
 

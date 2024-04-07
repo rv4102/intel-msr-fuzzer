@@ -12,15 +12,12 @@ def tvla(file1_path, file2_path):
     t_stat, p_val = stats.ttest_ind(data1, data2, equal_var=False)
     alpha = 0.05
 
-    df = len(data1) + len(data2) - 1
-    critical_value = stats.t.ppf(1 - alpha / 2, df)
-
     # # output the results
     # print("t-statistic: ", t_stat)
     # print("p-value: ", p_val)
     # print("critical value: ", critical_value)
 
-    if abs(t_stat) > critical_value:
+    if p_val < alpha:
         # print("Reject Null Hypothesis: Significant side-channel leakage detected")
         return 1
     else:
