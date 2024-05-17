@@ -1,12 +1,16 @@
 # Setup instructions
 
-1. Install Intel RAPL interface using:
+1. Load MSR module using
+    ```
+    sudo modprobe msr
+    ```
+2. Install Intel RAPL interface using:
     ```
     sudo apt update
     sudo apt install powercap-utils 
     ```
-2. Install scipy and numpy using pip
-3. Disable Intel SGX extensions to stop RAPL Filtering (go to BIOS -> Security -> Intel SGX)
+3. Install scipy and numpy using pip
+4. Disable Intel SGX extensions to stop RAPL Filtering (go to BIOS -> Security -> Intel SGX)
 
 # Explanation of setup
 
