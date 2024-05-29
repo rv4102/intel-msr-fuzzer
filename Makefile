@@ -1,6 +1,13 @@
-MSR_VAL=0x00000611
+MSR_VAL=0x64E
+ASM_PATH=./instructions.s
 
-all: libmeasure.a
+run:
+	sudo python3 main.py $(ASM_PATH) $(MSR_VAL)
+
+plot:
+	python3 plots.py $(ASM_PATH)
+
+power_monitor: libmeasure.a
 	g++ power_monitor.cpp -L./measure -I./measure -l:libmeasure.a -o power_monitor
 
 libmeasure.a: ./measure/measure.cpp ./measure/measure.h

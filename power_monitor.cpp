@@ -1,6 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <string>
+#include <stdio.h>
 #include "measure.h"
 
 void basic_inst() {
@@ -25,5 +23,5 @@ int main(int argc, char *argv[]) {
     Measurement stop = measure();
     Sample sample = convert(start, stop);
 
-    std::cout << sample.energy << std::endl;
+    printf("%lf\n", sample.energy);
 }
