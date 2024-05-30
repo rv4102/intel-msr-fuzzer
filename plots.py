@@ -1,13 +1,7 @@
+from utils import tvla, read_file
 import matplotlib.pyplot as plt
-import numpy as np
 import argparse
-from tvla import tvla
 import os
-
-def read_file(file_path):
-    with open(file_path, 'r') as file:
-        data = np.array([float(line.strip()) for line in file])
-    return data
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot TVLA Results')
@@ -24,30 +18,5 @@ if __name__ == '__main__':
         if line.strip() != "":
             num_instructions += 1
     
-    # if outputs folder doesnt exist then create it
-    if not os.path.exists('./plots'):
-        os.makedirs('./plots')
     
-    for i in range(num_instructions):
-        data1 = read_file(f'./outputs/inst_{i+1}_ht.txt')
-        data2 = read_file(f'./outputs/inst_{i+1}_ct.txt')
         
-        # plot each instruction in a separate plot
-        plt.figure()
-
-        plt.plot(data1, label='HT')
-        plt.plot(data2, label='CT')
-        plt.title(f'Instruction {i+1}: {instructions[i]}')
-        plt.xlabel('Reading')
-        plt.ylabel('MSR 0x64E Productive Performance Count')
-
-        # show on the plot that TVLA detected a violation
-        result = tvla(f'./outputs/inst_{i+1}_ht.txt', f'./outputs/inst_{i+1}_ct.txt')
-        if result == 1:
-            plt.plot([], [], ' ', label='p-value < 0.05, Violation')
-        else:
-            plt.plot([], [], ' ', label='p-value >= 0.05, No Violation')
-
-        plt.legend()
-
-        plt.savefig(f'./plots/inst_{i+1}.png')

@@ -1,5 +1,10 @@
+#include <ctime>
 #include <stdio.h>
-#include "measure.h"
+#include <cstdlib>
+#include "./measure/measure.h"
+
+#define NUM_RUNS 250000
+#define NUM_READINGS 1000
 
 void basic_inst() {
 
@@ -13,15 +18,18 @@ int main(int argc, char *argv[]) {
     // init the measurement library
     init();
 
-    int num_readings = 250000;
-    basic_inst();
+    srand(time(NULL));
 
-    Measurement start = measure();
-    for(int j = 0; j < num_readings; j++) {
-        measurement_inst();
+    for(int i = 0; i < NUM_READINGS; i++) {
+        basic_inst();
+
+        Measurement start = measure();
+        for(int j = 0; j < NUM_RUNS; j++) {
+            measurement_inst();
+        }
+        Measurement stop = measure();
+        Sample sample = convert(start, stop);
+
+        printf("%lf\n", sample.energy);
     }
-    Measurement stop = measure();
-    Sample sample = convert(start, stop);
-
-    printf("%lf\n", sample.energy);
 }
