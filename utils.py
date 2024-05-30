@@ -33,8 +33,8 @@ def convert(file, randomize = False):
             # if the token is a number (argument or immediate value)
             elif re.match(r'\$[0-9]+', token):
                 # print("number ", token)
-                num_inputs += 1
                 changed_line += ' %' + str(num_inputs)
+                num_inputs += 1
             else:
                 # print("normal ", token)
                 changed_line += ' ' + token
@@ -108,11 +108,7 @@ def replace_func_body(file_path, basic_inst, measurement_inst):
     return output
 
 
-def tvla(file1, file2, alpha = 0.05):
-    # read data from file1 and file2
-    data1 = np.array([float(line.strip()) for line in file1])
-    data2 = np.array([float(line.strip()) for line in file2])
-
+def tvla(data1, data2, alpha = 0.05):
     t_stat, p_val = stats.ttest_ind(data1, data2, equal_var=False)
 
     if p_val < alpha:

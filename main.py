@@ -6,6 +6,7 @@ import os
 
 def create_contract_trace(asm_code, power_monitor_code_path, line_num):
     basic_inst_code, measurement_inst_code = create_temp_assembly(asm_code, line_num)
+    basic_inst_code, measurement_inst_code = basic_inst_code.split('\n'), measurement_inst_code.split('\n')
     basic_inst = convert(basic_inst_code, randomize = True)
     measurement_inst = convert(measurement_inst_code, randomize = True)
 
@@ -20,6 +21,9 @@ def create_contract_trace(asm_code, power_monitor_code_path, line_num):
     # compile temp file in a separate process
     result = subprocess.run(['g++', 'temp.cpp', '-L./measure', '-I.', '-l:libmeasure.a', '-o', 'temp'])
 
+    if os.path.exists(f'./outputs/inst_{line_num+1}_ct.txt'):
+        os.remove(f'./outputs/inst_{line_num+1}_ct.txt')
+
     # run temp file and store its output
     with open(f'./outputs/inst_{line_num+1}_ct.txt', 'a') as f:
         result = subprocess.run(['./temp'], stdout=subprocess.PIPE)
@@ -33,6 +37,7 @@ def create_contract_trace(asm_code, power_monitor_code_path, line_num):
 
 def create_hardware_trace(asm_code, power_monitor_code_path, line_num):
     basic_inst_code, measurement_inst_code = create_temp_assembly(asm_code, line_num)
+    basic_inst_code, measurement_inst_code = basic_inst_code.split('\n'), measurement_inst_code.split('\n')
     basic_inst = convert(basic_inst_code)
     measurement_inst = convert(measurement_inst_code)
 
@@ -46,6 +51,9 @@ def create_hardware_trace(asm_code, power_monitor_code_path, line_num):
     
     # compile temp file in a separate process
     result = subprocess.run(['g++', 'temp.cpp', '-L./measure', '-I.', '-l:libmeasure.a', '-o', 'temp'])
+
+    if os.path.exists(f'./outputs/inst_{line_num+1}_ht.txt'):
+        os.remove(f'./outputs/inst_{line_num+1}_ht.txt')
 
     # run temp file num_readings times
     with open(f'./outputs/inst_{line_num+1}_ht.txt', 'a') as f:
@@ -68,7 +76,7 @@ if __name__ == '__main__':
     # change the value of Makefile argument to MSR_value
     with open('Makefile', 'r') as f:
         makefile = f.read()
-        makefile = re.sub(r'MSR_VAL=0x[0-9A-Z]+', f'MSR_VAL={args.MSR_value}', makefile)
+        makefile = re.sub(r'MSR_VAL=0x[0-9A-Z]+', f'MSR_VAL={args.MSR_Value}', makefile)
 
     with open('Makefile', 'w') as f:
         f.write(makefile)
@@ -77,7 +85,7 @@ if __name__ == '__main__':
     result = subprocess.run(['make', 'libmeasure.a'])
 
     # read assembly code
-    with open(args.asm_code_path, 'r') as f:
+    with open(args.ASM_Code_Path, 'r') as f:
         asm_code = f.read()
     
     num_instructions = 0
@@ -110,6 +118,7 @@ if __name__ == '__main__':
     if not os.path.exists('./plots'):
         os.makedirs('./plots')
     
+    print('####### Generating Plots ######')
     for i in range(num_instructions):
         data1 = read_file(f'./outputs/inst_{i+1}_ht.txt')
         data2 = read_file(f'./outputs/inst_{i+1}_ct.txt')
@@ -118,6 +127,7 @@ if __name__ == '__main__':
         result = tvla(data1, data2)
 
         # make plot
-        make_plot(data1, data2, i, instructions[i], result)
+        make_plot(data1, data2, i+1, instructions[i], result)
+    print('###### Plots Generated ######')
 
     exit(0)
