@@ -43,10 +43,10 @@ if __name__ == '__main__':
     print('###### Running TVLA ######')
     for i in range(num_instructions):
         print("Running TVLA for instruction: ", instructions[i])
-        result = tvla(f'./outputs/inst_{i+1}.txt', f'./outputs/inst_{i+1}_ct.txt')
+        result = tvla(f'./outputs/inst_{i+1}_ht.txt', f'./outputs/inst_{i+1}_ct.txt')
         if result == 1:
             print("Violation Detected, significant leakage found")
-            exit(0)
+            # exit(0)
     
     print('No violation detected, no significant leakage found')
     exit(0)

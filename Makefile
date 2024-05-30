@@ -7,6 +7,9 @@ run:
 plot:
 	python3 plots.py $(ASM_PATH)
 
+check:
+	python3 tvla.py $(ASM_PATH)
+
 power_monitor: libmeasure.a
 	g++ power_monitor.cpp -L./measure -I./measure -l:libmeasure.a -o power_monitor
 

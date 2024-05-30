@@ -22,7 +22,8 @@ The motivation behind this attack lies in the Platypus paper and we aim to suppo
 
 ```main.py``` contains all the code needed to first create a contract trace for 1000 different input values (contract traces) and then to create 1000 readings for a fixed input value (hardware traces).
 
-1. ```sudo python3 main.py``` (The sudo is needed in order to read the MSR values)
+1. ```make run``` (sudo is needed in order to read the MSR values)
+2. ```make plot```
 
 # Other
 

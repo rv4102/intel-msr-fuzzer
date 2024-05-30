@@ -56,10 +56,10 @@ def create_hardware_trace(asm_code, power_monitor_code_path, line_num):
     result = subprocess.run(['g++', 'temp.cpp', '-L./measure', '-I./measure', '-l:libmeasure.a', '-o', 'temp'])
 
     # run temp file num_readings times
-    with open(f'./outputs/inst_{line_num+1}.txt', 'a') as f:
+    with open(f'./outputs/inst_{line_num+1}_ht.txt', 'a') as f:
         for j in range(num_readings):
             if j/num_readings == 0.50:
-                print("50%% done")
+                print("50% done")
             result = subprocess.run(['./temp'], stdout=subprocess.PIPE)
             f.write(result.stdout.decode('utf-8'))
     print("100% done")
@@ -100,9 +100,9 @@ def create_contract_trace(asm_code, power_monitor_code_path, line_num):
             f.write(result.stdout.decode('utf-8'))
         
         if j/num_readings == 0.50:
-            print("50%% done")
+            print("50% done")
     
-    print("100%% done")
+    print("100% done")
 
     # delete temp, temp.cpp, basic_inst.s, measurement_inst.s
     os.remove('temp')

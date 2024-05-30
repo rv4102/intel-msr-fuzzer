@@ -28,7 +28,7 @@ if __name__ == '__main__':
         os.makedirs('./plots')
     
     for i in range(num_instructions):
-        data1 = read_file(f'./outputs/inst_{i+1}.txt')
+        data1 = read_file(f'./outputs/inst_{i+1}_ht.txt')
         data2 = read_file(f'./outputs/inst_{i+1}_ct.txt')
         
         # plot each instruction in a separate plot
@@ -37,8 +37,8 @@ if __name__ == '__main__':
         plt.plot(data1, label='HT')
         plt.plot(data2, label='CT')
         plt.title(f'Instruction {i+1}')
-        plt.xlabel('Frequency')
-        plt.ylabel('Power')
+        plt.xlabel('Reading')
+        plt.ylabel('MSR 0x64E Productive Performance Count')
 
         plt.legend()
 
