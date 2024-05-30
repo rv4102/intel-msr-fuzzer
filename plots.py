@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+from tvla import tvla
 import os
 
 def read_file(file_path):
@@ -36,9 +37,16 @@ if __name__ == '__main__':
 
         plt.plot(data1, label='HT')
         plt.plot(data2, label='CT')
-        plt.title(f'Instruction {i+1}')
+        plt.title(f'Instruction {i+1}: {instructions[i]}')
         plt.xlabel('Reading')
         plt.ylabel('MSR 0x64E Productive Performance Count')
+
+        # show on the plot that TVLA detected a violation
+        result = tvla(f'./outputs/inst_{i+1}_ht.txt', f'./outputs/inst_{i+1}_ct.txt')
+        if result == 1:
+            plt.plot([], [], ' ', label='p-value < 0.05, Violation')
+        else:
+            plt.plot([], [], ' ', label='p-value >= 0.05, No Violation')
 
         plt.legend()
 
