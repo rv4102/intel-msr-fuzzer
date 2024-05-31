@@ -45,17 +45,17 @@ def convert(file, randomize = False):
     asm_volatile = ''
     if not randomize:
         for i in range(1, num_inputs+1):
-            asm_volatile += f'uint32_t arg{i} = {i};\n'
+            asm_volatile += f'\tvolatile uint32_t arg{i} = {i};\n'
     else:
         for i in range(1, num_inputs+1):
-            asm_volatile += f'uint32_t arg{i} = rand();\n'
+            asm_volatile += f'\tvolatile uint32_t arg{i} = rand();\n'
 
     asm_volatile += 'asm volatile(\n'
     for line in extended_asm:
-        asm_volatile += '\t"' + line + '"\n'
+        asm_volatile += '\t\t"' + line + '"\n'
 
     # get the list of input registers and output values
-    asm_volatile += '\t:\n\t:' # no outputs
+    asm_volatile += '\t\t:\n\t\t:' # no outputs
     
     for i in range(1, num_inputs+1):
         if i == num_inputs:
@@ -64,13 +64,13 @@ def convert(file, randomize = False):
             asm_volatile += '"r" ' + f'(arg{i}), '
     
     # get the list of clobbered registers
-    asm_volatile += '\t: '
+    asm_volatile += '\t\t: '
     for idx, register in enumerate(registers):
         if idx == len(registers) - 1:
             asm_volatile +=  '"' + register + '"\n'
         else:
             asm_volatile +=  '"' + register + '", '
-    asm_volatile += ');'
+    asm_volatile += '\t);'
 
     return asm_volatile
 
@@ -86,12 +86,7 @@ def create_temp_assembly(asm_code, line_num):
             measurement_inst_code += line + '\n'
         else:
             break
-    
-    # with open('basic_inst.s', 'w') as f:
-    #     f.write(basic_inst_code)
-    
-    # with open('measurement_inst.s', 'w') as f:
-    #     f.write(measurement_inst_code)
+
     return basic_inst_code, measurement_inst_code
 
 

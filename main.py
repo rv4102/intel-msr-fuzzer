@@ -26,13 +26,11 @@ def create_contract_trace(asm_code, power_monitor_code_path, line_num):
 
     # run temp file and store its output
     with open(f'./outputs/inst_{line_num+1}_ct.txt', 'a') as f:
-        result = subprocess.run(['./temp'], stdout=subprocess.PIPE)
+        result = subprocess.run(['sudo',  'taskset', '-c', '0', './temp'], stdout=subprocess.PIPE)
         f.write(result.stdout.decode('utf-8'))
 
     os.remove('temp')
     os.remove('temp.cpp')
-    # os.remove('basic_inst.s')
-    # os.remove('measurement_inst.s')
 
 
 def create_hardware_trace(asm_code, power_monitor_code_path, line_num):
@@ -57,14 +55,12 @@ def create_hardware_trace(asm_code, power_monitor_code_path, line_num):
 
     # run temp file num_readings times
     with open(f'./outputs/inst_{line_num+1}_ht.txt', 'a') as f:
-        result = subprocess.run(['./temp'], stdout=subprocess.PIPE)
+        result = subprocess.run(['sudo',  'taskset', '-c', '0', './temp'], stdout=subprocess.PIPE)
         f.write(result.stdout.decode('utf-8'))
         
     # delete temp, temp.cpp, basic_inst.s, measurement_inst.s
     os.remove('temp')
     os.remove('temp.cpp')
-    # os.remove('basic_inst.s')
-    # os.remove('measurement_inst.s')
 
 
 if __name__ == '__main__':
@@ -73,13 +69,13 @@ if __name__ == '__main__':
     parser.add_argument('MSR_Value', type=str, help='MSR Value')
     args = parser.parse_args()
 
-    # change the value of Makefile argument to MSR_value
-    with open('Makefile', 'r') as f:
-        makefile = f.read()
-        makefile = re.sub(r'MSR_VAL=0x[0-9A-Z]+', f'MSR_VAL={args.MSR_Value}', makefile)
+    # # change the value of Makefile argument to MSR_value
+    # with open('Makefile', 'r') as f:
+    #     makefile = f.read()
+    #     makefile = re.sub(r'MSR_VAL=0x[0-9A-Z]+', f'MSR_VAL={args.MSR_Value}', makefile)
 
-    with open('Makefile', 'w') as f:
-        f.write(makefile)
+    # with open('Makefile', 'w') as f:
+    #     f.write(makefile)
     
     # compile libmeasure.a
     result = subprocess.run(['make', 'libmeasure.a'])
