@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #define USE_MSR 1
-#define MSR 0x00000611
+#define MSR 0x611
 
 static uint64_t rdtsc() {
   uint64_t a, d;
