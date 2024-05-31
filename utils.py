@@ -136,10 +136,10 @@ def replace_func_body(file_path, basic_inst, measurement_inst, measurement_inst_
     return output
 
 
-def tvla(data1, data2, alpha = 0.05):
+def tvla(data1, data2, alpha = 4.5):
     t_stat, p_val = stats.ttest_ind(data1, data2, equal_var=False)
 
-    if p_val < alpha:
+    if abs(t_stat) > alpha:
         # print("Reject Null Hypothesis: Significant side-channel leakage detected")
         return 1
     else:
@@ -155,12 +155,12 @@ def make_plot(data1, data2, instruction_num, instruction, tvla_result):
     plt.plot(data2, label='CT')
     plt.title(f'Instruction {instruction_num}: {instruction}')
     plt.xlabel('Reading')
-    plt.ylabel('MSR 0x64E Productive Performance Count')
+    plt.ylabel('MSR 0x64E: Productive Performance Count')
 
     if tvla_result == 1:
-        plt.plot([], [], ' ', label='p-value < 0.05, Violation')
+        plt.plot([], [], ' ', label='t-stat > 4.5, Violation')
     else:
-        plt.plot([], [], ' ', label='p-value >= 0.05, No Violation')
+        plt.plot([], [], ' ', label='t-stat <= 4.5, No Violation')
 
     plt.legend()
 

@@ -1,7 +1,6 @@
 from utils import convert, replace_func_body, create_temp_assembly, read_file, tvla, make_plot
 import subprocess
 import argparse
-import re
 import os
 
 def create_contract_trace(asm_code, power_monitor_code_path, line_num):
@@ -86,7 +85,6 @@ if __name__ == '__main__':
     if not os.path.exists('./outputs'):
         os.makedirs('./outputs')
     
-    # num_readings = 1000 
     print(f'Number of instructions: {num_instructions}')
 
     print('###### Building Hardware Trace ######')
