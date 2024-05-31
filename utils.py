@@ -147,7 +147,7 @@ def tvla(data1, data2, alpha = 4.5):
         return 0
     
 
-def make_plot(data1, data2, instruction_num, instruction, tvla_result):
+def make_plot(data1, data2, instruction_num, instruction, tvla_result, folder_name):
     # plot each instruction in a separate plot
     plt.figure()
 
@@ -164,6 +164,6 @@ def make_plot(data1, data2, instruction_num, instruction, tvla_result):
 
     plt.legend()
 
-    plt.savefig(f'./plots/inst_{instruction_num}.png')
+    plt.savefig(f'./plots/at_t/{folder_name}/inst_{instruction_num}.png')
     plt.close()
     return
