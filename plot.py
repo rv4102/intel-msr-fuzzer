@@ -28,7 +28,6 @@ if __name__ == '__main__':
     print('####### Generating Plots ######')
     for i in range(num_instructions):
         data1 = read_file(f'./outputs/at_t/{folder_name}/inst_{i+1}_ht.txt')
-        print(f'./outputs/at_t/{folder_name}/inst_{i+1}_ht.txt')
         data2 = read_file(f'./outputs/at_t/{folder_name}/inst_{i+1}_ct.txt')
         
         # show on the plot that TVLA detected a violation

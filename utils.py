@@ -28,8 +28,10 @@ def convert(file, randomize = False, is_measurement_inst = False):
                 # print("register ", token)
                 if len(token) > 4:
                     token = token[0:4]
-                registers.add(token)
+                if token != '%rsp':
+                    registers.add(token)
                 changed_line += ' %' + token
+
             # if the token is a number (argument or immediate value)
             elif re.match(r'\$[0-9]+', token):
                 # print("number ", token)
@@ -68,10 +70,10 @@ def convert(file, randomize = False, is_measurement_inst = False):
     asm_volatile += '\n\t\t: '
     for idx, register in enumerate(registers):
         if idx == len(registers) - 1:
-            asm_volatile +=  '"' + register + '"\n'
+            asm_volatile +=  '"' + register + '"'
         else:
             asm_volatile +=  '"' + register + '", '
-    asm_volatile += '\t);'
+    asm_volatile += '\n\t);'
 
     return asm_volatile, num_inputs
 
@@ -89,6 +91,7 @@ def create_temp_assembly(asm_code, line_num):
             break
 
     return basic_inst_code, measurement_inst_code
+    # return "", asm_code
 
 
 def replace_func_body(file_path, basic_inst, measurement_inst, measurement_inst_num_inputs, randomize = False):
@@ -154,6 +157,7 @@ def make_plot(data1, data2, instruction_num, instruction, tvla_result, folder_na
     plt.plot(data1, label='HT')
     plt.plot(data2, label='CT')
     plt.title(f'Instruction {instruction_num}: {instruction}')
+    # plt.title('edx set to 1')
     plt.xlabel('Reading')
     plt.ylabel('MSR 0x64E: Productive Performance Count')
 

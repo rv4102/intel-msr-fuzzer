@@ -31,7 +31,7 @@ def create_trace(asm_code, power_monitor_code_path, line_num, folder_name, type 
         os.remove(f'./outputs/at_t/{folder_name}/inst_{line_num+1}_{type}.txt')
 
     # run temp file and store its output
-    with open(f'./outputs/inst_{line_num+1}_{type}.txt', 'a') as f:
+    with open(f'./outputs/at_t/{folder_name}/inst_{line_num+1}_{type}.txt', 'a') as f:
         result = subprocess.run(['sudo',  'taskset', '-c', '1', './temp'], stdout=subprocess.PIPE)
         f.write(result.stdout.decode('utf-8'))
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     
     result = subprocess.run(['make', 'libmeasure.a'])
 
-    folder_name = args.ASM_Code_Path.split('/')[-2]
+    folder_name = args.ASM_Code_Path.split('/')[-1].split('.')[0]
     with open(args.ASM_Code_Path, 'r') as f:
         asm_code = f.read()
     
@@ -59,26 +59,26 @@ if __name__ == '__main__':
             num_instructions += 1
     
     # if outputs folder doesnt exist then create it
-    if not os.path.exists('./outputs/at_t'):
-        os.makedirs('./outputs/at_t')
+    if not os.path.exists(f'./outputs/at_t/{folder_name}'):
+        os.makedirs(f'./outputs/at_t/{folder_name}')
     
     print(f'Number of instructions: {num_instructions}')
 
     print('###### Building Hardware Trace ######')
     for i in range(num_instructions):
         print("Building trace for instruction: ", instructions[i])
-        create_trace(asm_code, './power_monitor.cpp', i, 'ht')
+        create_trace(asm_code, './power_monitor.cpp', i, folder_name, 'ht')
     print('###### Hardware Trace Built ######')
 
     print('###### Building Contract Trace ######')
     for i in range(num_instructions):
         print("Building trace for instruction: ", instructions[i])
-        create_trace(asm_code, './power_monitor.cpp', i, 'ct')
+        create_trace(asm_code, './power_monitor.cpp', i, folder_name, 'ct')
     print('###### Contract Trace Built ######')
 
     # if outputs folder doesnt exist then create it
-    if not os.path.exists('./plots/at_t'):
-        os.makedirs('./plots/at_t')
+    if not os.path.exists(f'./plots/at_t/{folder_name}'):
+        os.makedirs(f'./plots/at_t/{folder_name}')
     
     print('####### Generating Plots ######')
     for i in range(num_instructions):
@@ -89,7 +89,7 @@ if __name__ == '__main__':
         result = tvla(data1, data2)
 
         # make plot
-        make_plot(data1, data2, i+1, instructions[i], result)
+        make_plot(data1, data2, i+1, instructions[i], result, folder_name)
     print('###### Plots Generated ######')
 
     exit(0)
