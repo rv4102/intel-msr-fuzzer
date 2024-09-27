@@ -25,7 +25,7 @@ def create_trace(asm_code, power_monitor_code_path, line_num, folder_name, type 
     with open('temp.cpp', 'w') as f:
         f.write(power_monitor_code)
     
-    result = subprocess.run(['g++', 'temp.cpp', '-L./measure', '-I.', '-l:libmeasure.a', '-o', 'temp'])
+    result = subprocess.run(['g++', 'temp.cpp', '-o', 'temp'])
 
     if os.path.exists(f'./outputs/at_t/{folder_name}/inst_{line_num+1}_{type}.txt'):
         os.remove(f'./outputs/at_t/{folder_name}/inst_{line_num+1}_{type}.txt')
@@ -44,8 +44,6 @@ if __name__ == '__main__':
     parser.add_argument('ASM_Code_Path', type=str, help='Path to assembly code')
     parser.add_argument('MSR_Value', type=str, help='MSR Value')
     args = parser.parse_args()
-    
-    result = subprocess.run(['make', 'libmeasure.a'])
 
     folder_name = args.ASM_Code_Path.split('/')[-1].split('.')[0]
     with open(args.ASM_Code_Path, 'r') as f:

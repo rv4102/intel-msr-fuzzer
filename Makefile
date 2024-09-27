@@ -7,12 +7,8 @@ run:
 plot:
 	python3 plot.py $(ASM_PATH)
 
-power_monitor: libmeasure.a
-	g++ power_monitor.cpp -L./measure -I./measure -l:libmeasure.a -o power_monitor
-
-libmeasure.a: ./measure/measure.cpp ./measure/measure.h
-	g++ -c ./measure/measure.cpp -w -DMSR=MSR_VAL -o ./measure/measure.o
-	ar rcs ./measure/libmeasure.a ./measure/measure.o
+power_monitor:
+	g++ power_monitor.cpp -DMSR=MSR_VAL -o power_monitor
 
 clean:
-	-rm ./measure/measure.o ./measure/libmeasure.a power_monitor
+	-rm power_monitor
